@@ -74,10 +74,10 @@ esac
 
 # rec download
 if [ $m3u8 ]; then
-  echo "$$ [$recdl] `date '+%m-%d &H:%M:%S'` start"
+  echo "$$ [$recdl] `date '+%m-%d %H:%M:%S'` start"
   [ -f $tmpdir/$name.ts ] && mv $tmpdir/$name.ts $tmpdir/$name'_'`ls --full-time --time-style=+%Y%m%d-%H%M%S $tmpdir/$name.ts | awk '{print $6}'`.ts
   ffmpeg -i $m3u8 $optarg_t -loglevel error -acodec copy -vcodec copy $tmpdir/$name.ts
   ffmpeg -i $tmpdir/$name.ts -loglevel error -acodec copy -vcodec copy $outdir/$name.mp4
-  echo "$$ [$recdl] `date '+%m-%d &H:%M:%S'` $stopsuccess"
+  echo "$$ [$recdl] `date '+%m-%d %H:%M:%S'` $stopsuccess"
 fi
 
