@@ -41,7 +41,7 @@ case $1 in
   --live|-r)
   [[ `echo $2 | grep 'twitcast'` ]] && id=`echo $2 | grep -Po '(?<=tv/).+?(?=/movie)'` || id=$2
   m3u8=$url/$id/metastream.m3u8/?video=1
-  [ $3 ] && optarg_t="-t $(($3 * 60))" || optarg_t="-t 86400"
+  [[ $3 && $3 -ge 1 ]] && optarg_t="-t $(($3 * 60))" || optarg_t="-t 86400"
   # rec wait
   echo -n "$$ [onair] `date '+%m-%d %H:%M:%S'` standby..."
   while :
