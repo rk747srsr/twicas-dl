@@ -3,7 +3,7 @@
 tmpdir=/tmp
 outdir=$HOME/Downloads
 nkf='nkf --fb-skip -m0 -Z1 -Lu'
-ver=0.9.1
+ver=0.9.2
 
 usage() {
   echo "twitcas-dl.sh($ver): twitcasting recorder"
@@ -29,14 +29,14 @@ case $1 in
   -n)
   pagesrc=`curl -s $url/$2/show/`
   # out no rec id
-  showid=(`echo "$pagesrc" | grep -Po '(?<=#)[0-9]{9}'`)
+  showid=(`echo "$pagesrc" | sed -n -E '/\"tw-movie-thumbnail\"/s/(^.*movie\/|" >$)//gp'`)
   for norec in `seq 0 $((${#showid[@]} - 1))`
   do
-    [[ ! `echo "$pagesrc" | sed -n "/movie\/${showid[$norec]}/,/#${showid[$norec]}/p" | grep 'REC'` ]] && norecid=(${norecid[@]} ${showid[$norec]})
+    [[ ! `echo "$pagesrc" | sed -n "/movie\/${showid[$norec]}/,/-title/p" | grep 'REC'` ]] && norecid=(${norecid[@]} ${showid[$norec]})
   done
   [ "${#norecid[@]}" -ge 2 ] && norecid=`echo "${norecid[@]}" | tr ' ' '|'`
   # updates
-  echo "$pagesrc" | sed -n -E '/(#[0-9]{9}|tw-movie-thumbnail-label|datetime)/s/(^[ ]*|(<|datetime=")[^>]*>| *)//gp' | perl -pe 's/(\d{2}:\d{2}:\d{2}$)/ $1\n/' | tac | grep -v -E $norecid | $nkf | sed 1d
+  echo "$pagesrc" | sed 's/movie\//&>/; s/" >/<&/g' | sed -n -E '/(^[0-9]{9}|\/movie\/|tw-movie-thumbnail-(label|duration)|datetime)/s/(^[ ]*|(<|datetime=")[^>]*>| *)//gp' | perl -pe 's/(\d{2}:\d{2}:\d{2}$)/ $1\n/' | tac | grep -v -E $norecid | $nkf | sed 1d
   ;;
   --live|-r)
   [[ `echo $2 | grep 'twitcast'` ]] && id=`echo $2 | grep -Po '(?<=tv/).+?(?=/movie)'` || id=$2
