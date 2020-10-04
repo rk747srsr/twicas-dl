@@ -30,7 +30,7 @@ case $1 in
   pagesrc=`curl -s $url/$2/show/`
   [[ ! `echo "$pagesrc" | grep tw-movie-thumbnail-title` ]] && exit 0
   # out no rec id
-  showid=(`echo "$pagesrc" | sed -n -E '/\"tw-movie-thumbnail\"/s/(^.*movie\/|" >$)//gp'`)
+  showid=(`echo "$pagesrc" | sed -n -E '/"tw-movie-thumbnail"/s/(^.*movie\/|" >$)//gp'`)
   for norec in `seq 0 $((${#showid[@]} - 1))`
   do
     [[ ! `echo "$pagesrc" | sed -n "/movie\/${showid[$norec]}/,/-date/p" | grep 'REC'` || `echo "$pagesrc" | sed -n "/movie\/${showid[$norec]}/,/-date/p" | grep 'locked.png'` ]] && norecid=(${norecid[@]} ${showid[$norec]})
