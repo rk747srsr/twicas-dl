@@ -30,14 +30,16 @@ case $1 in
   pagesrc=`curl -s $url/$2/show/`
   [[ ! `echo "$pagesrc" | grep tw-movie-thumbnail-title` ]] && exit 0
   # out no rec id
-  showid=(`echo "$pagesrc" | sed -n -E '/"tw-movie-thumbnail"/s/(^.*movie\/|" >$)//gp'`)
+  showid=(`echo "$pagesrc" | sed -n -E '/\"tw-movie-thumbnail\"/s/(^.*movie\/|" >$)//gp'`)
   for norec in `seq 0 $((${#showid[@]} - 1))`
   do
-    [[ ! `echo "$pagesrc" | sed -n "/movie\/${showid[$norec]}/,/-date/p" | grep 'REC'` || `echo "$pagesrc" | sed -n "/movie\/${showid[$norec]}/,/-date/p" | grep 'locked'` ]] && norecid=(${norecid[@]} ${showid[$norec]})
+    [[ ! `echo "$pagesrc" | sed -n "/movie\/${showid[$norec]}/,/-date/p" | grep 'REC'` || `echo "$pagesrc" | sed -n "/movie\/${showid[$norec]}/,/-date/p" | grep 'locked.png'` ]] && norecid=(${norecid[@]} ${showid[$norec]})
   done
   [ "${#norecid[@]}" -ge 2 ] && norecid=`echo "${norecid[@]}" | tr ' ' '|'`
-  # updates
-  (echo "$pagesrc" | sed 's/movie\//&>/; s/" >/<&/g' | sed -n -E '/(^[0-9]{9}|\/movie\/|tw-movie-thumbnail-(label|duration)|datetime)/s/(^[ ]*|(<|datetime=")[^>]*>| *)//gp' | perl -pe 's/(\d{2}:\d{2}:\d{2}$)/ $1\n/' | tac | grep -v -E $norecid | $nkf | sed 1d) 2>/dev/null
+  updates() {
+    echo "$pagesrc" | sed 's/movie\//&>/; s/" >/<&/g' | sed -n -E '/(^[0-9]{9}|\/movie\/|tw-movie-thumbnail-(label|duration)|datetime)/s/(^[ ]*|(<|datetime=")[^>]*>| *)//gp' | perl -pe 's/(\d{2}:\d{2}:\d{2}$)/ $1\n/' | tac | $nkf | sed 1d
+  }
+  [ ! $norecid ] && updates || updates | grep -v -E $norecid
   ;;
   --live|-r)
   [[ `echo $2 | grep 'twitcast'` ]] && id=`echo $2 | grep -Po '(?<=tv/).+?(?=/movie)'` || id=$2
